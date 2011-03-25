@@ -16,6 +16,7 @@ class UsersController < ApplicationController
   def new
     @user = User.new
     @title = "Sign up"
+    redirect_to(root_path) unless current_user?(nil)
   end
   
   def create
@@ -31,6 +32,7 @@ class UsersController < ApplicationController
       @user.password_confirmation = nil
       render 'new'
     end
+    redirect_to(root_path) unless current_user?(nil)
   end
   
   def edit
@@ -49,8 +51,13 @@ class UsersController < ApplicationController
   end
   
   def destroy
-    User.find(params[:id]).destroy
-    flash[:success] = "User destroyed."
+    user = User.find(params[:id])
+    if current_user?(user)
+      flash[:error] = "Admin suicide warning: Can't delete yourself."
+    else
+      user.destroy
+      flash[:success] = "User destroyed."
+    end
     redirect_to users_path
   end
   
